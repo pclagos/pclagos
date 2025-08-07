@@ -145,42 +145,7 @@
     </div>
 </section>
 
-<!-- Featured Works Section -->
-{% if featured_works %}
-<section class="py-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 text-center mb-5">
-                <h2 class="display-5 fw-bold">Trabajos Destacados</h2>
-                <p class="lead text-muted">Algunos de mis trabajos más recientes</p>
-            </div>
-        </div>
-        
-        <div class="row g-4">
-            {% for work in featured_works %}
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    {% if work.image %}
-                    <img src="{{ work.image.url }}" class="card-img-top" alt="{{ work.title }}">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ work.title }}</h5>
-                        <p class="card-text">{{ work.description|truncatewords:15 }}</p>
-                        <small class="text-muted">{{ work.service_type }} - {{ work.completed_date }}</small>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <div class="text-center mt-4">
-            <a href="{% url 'core:gallery' %}" class="btn btn-outline-primary btn-lg">
-                Ver Historial Completo
-            </a>
-        </div>
-    </div>
-</section>
-{% endif %}
+
 
 <!-- CTA Section -->
 <section class="py-5 bg-primary text-white">
