@@ -134,12 +134,6 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
-# Media files
-media/
-
-# Static files
-staticfiles/
-
 # Environment variables
 .env
 .env.local
