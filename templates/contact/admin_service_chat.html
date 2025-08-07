@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Chat - {{ contact.service_code }} - PCLagos{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Información del cliente -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Información del Cliente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Código:</strong> <span class="badge bg-secondary">{{ contact.service_code }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Nombre:</strong> {{ contact.name }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Email:</strong> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Teléfono:</strong> <a href="https://wa.me/5493402556984">{{ contact.phone }}</a>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Servicio:</strong> {{ contact.service_needed }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Estado:</strong> 
+                        {% if contact.status == 'completed' %}
+                            <span class="badge bg-success text-white">
+                                <i class="fas fa-check-circle me-1"></i>{{ contact.get_status_display }}
+                            </span>
+                        {% else %}
+                            <span class="badge bg-{{ contact.get_status_color }}">{{ contact.get_status_display }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Fecha:</strong> {{ contact.created_at|date:"d/m/Y H:i" }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Descripción:</strong>
+                        <p class="text-muted">{{ contact.description }}</p>
+                    </div>
+                    
+                    <!-- Código QR -->
+                    <div class="mb-3">
+                        <strong>Código QR:</strong>
+                        <div class="text-center mt-2">
+                            {% if contact.qr_code %}
+                                <img src="{{ contact.qr_code.url }}" alt="QR Code" class="img-fluid" style="max-width: 150px;">
+                                <br>
+                                <small class="text-muted">Escaneá para acceder al chat</small>
+                            {% else %}
+                                <div class="bg-light p-3 rounded">
+                                    <i class="fas fa-qrcode fa-2x text-muted"></i>
+                                    <p class="text-muted mt-2 mb-0">QR no disponible</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario para agregar notas -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>Agregar Nota
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="note_date" class="form-label">Fecha de la nota</label>
+                            <input type="datetime-local" class="form-control" id="note_date" name="note_date" 
+                                   value="{{ current_datetime }}" required>
+                            <small class="text-muted">Dejar vacío para usar fecha actual</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="note" class="form-label">Nota de reparación</label>
+                            <textarea class="form-control" id="note" name="note" rows="3" 
+                                      placeholder="Ej: 17/2/2025 15:20hs llegó la PC" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-plus me-2"></i>Agregar Nota
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat y notas -->
+        <div class="col-md-8">
+            <!-- Notas de reparación -->
+            {% if notes %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>Notas de Reparación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for note in notes %}
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="timeline-marker bg-warning rounded-circle me-3" style="width: 12px; height: 12px; margin-top: 6px;"></div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <strong class="text-warning">{{ note.display_date|date:"d/m/Y H:i" }}</strong>
+                                    </div>
+                                    <p class="mb-0 mt-1">{{ note.note }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Chat -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>Chat con Cliente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="chat-messages" class="chat-container mb-3" style="height: 400px; overflow-y: auto;">
+                        {% for message in messages %}
+                        <div class="message {% if message.is_from_admin %}admin-message{% else %}client-message{% endif %} mb-3">
+                            <div class="d-flex {% if message.is_from_admin %}justify-content-end{% endif %}">
+                                <div class="message-bubble {% if message.is_from_admin %}bg-primary text-white{% else %}bg-light{% endif %} p-3 rounded" style="max-width: 70%;">
+                                    <div class="message-content">{{ message.message }}</div>
+                                    <small class="message-time {% if message.is_from_admin %}text-white-50{% else %}text-muted{% endif %}">
+                                        {{ message.created_at|date:"d/m/Y H:i" }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if contact.status == 'completed' %}
+                        <div class="alert alert-success text-center mb-0">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>¡Servicio Completado!</strong> El chat ha sido bloqueado ya que este servicio ha sido finalizado exitosamente.
+                        </div>
+                    {% elif contact.status == 'cancelled' %}
+                        <div class="alert alert-danger text-center mb-0">
+                            <i class="fas fa-times-circle me-2"></i>
+                            <strong>¡Servicio Cancelado!</strong> El chat ha sido bloqueado ya que este servicio ha sido cancelado.
+                        </div>
+                    {% else %}
+                        <form id="message-form" class="d-flex gap-2">
+                            <input type="text" id="message-input" class="form-control" placeholder="Escribí tu mensaje..." required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline-item {
+    position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 24px;
+    bottom: -12px;
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.message-bubble {
+    word-wrap: break-word;
+}
+
+.chat-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatContainer = document.getElementById('chat-messages');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const serviceCode = '{{ contact.service_code }}';
+    const isCompleted = {% if contact.status == 'completed' %}true{% else %}false{% endif %};
+const isCancelled = {% if contact.status == 'cancelled' %}true{% else %}false{% endif %};
+
+    // Scroll al final del chat
+    function scrollToBottom() {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    scrollToBottom();
+
+    // Enviar mensaje solo si no está completado
+    if (messageForm && !isCompleted && !isCancelled) {
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Enviar mensaje via AJAX
+            fetch(`/contact/chat/${serviceCode}/send/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `message=${encodeURIComponent(message)}&is_admin=true`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageInput.value = '';
+                    // Recargar mensajes
+                    loadMessages();
+                }
+            });
+        });
+    }
+
+    // Cargar mensajes
+    function loadMessages() {
+        fetch(`/contact/chat/${serviceCode}/messages/`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Actualizar solo la sección de mensajes
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.innerHTML = '';
+            
+            data.messages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.is_from_admin ? 'admin-message' : 'client-message'} mb-3`;
+                messageDiv.innerHTML = `
+                    <div class="d-flex ${msg.is_from_admin ? 'justify-content-end' : ''}">
+                        <div class="message-bubble ${msg.is_from_admin ? 'bg-primary text-white' : 'bg-light'} p-3 rounded" style="max-width: 70%;">
+                            <div class="message-content">${msg.message}</div>
+                            <small class="message-time ${msg.is_from_admin ? 'text-white-50' : 'text-muted'}">
+                                ${msg.created_at}
+                            </small>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(messageDiv);
+            });
+            scrollToBottom();
+        });
+    }
+
+    // Actualizar mensajes cada 3 segundos
+    setInterval(loadMessages, 3000);
+});
+</script>
+{% endblock %} 

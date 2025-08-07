@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Historial - PCLagos{% endblock %}
+
+{% block content %}
+<!-- Banner de confirmación del código de servicio -->
+{% if service_code_message %}
+<div class="bg-success text-white py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-check-circle fa-2x mb-3"></i>
+                    <h4 class="mb-3">¡Gracias por tu mensaje!</h4>
+                    <p class="mb-3 fs-5">
+                        <strong>Tu código de servicio es: 
+                            <a href="{% url 'contact:service_chat' service_code=service_code_message %}" 
+                               class="text-white text-decoration-none" 
+                               style="letter-spacing:2px; font-weight: bold; border-bottom: 2px solid white;">
+                                {{ service_code_message }}
+                            </a>
+                        </strong>
+                    </p>
+                    <p class="mb-3">
+                        <small>Hacé clic en el código para ir directamente al chat</small>
+                    </p>
+                    <div class="alert alert-warning d-inline-block mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>¡IMPORTANTE!</strong> Anotá este código para consultar el estado de tu servicio más tarde.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Código QR -->
+<div class="bg-light py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="text-center">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-qrcode me-2"></i>Código QR
+                    </h6>
+                    <p class="text-muted small mb-3">Escaneá este código para acceder al chat desde tu celular</p>
+                    {% if contact and contact.qr_code %}
+                        <img src="{{ contact.qr_code.url }}" alt="QR Code" class="img-fluid" style="max-width: 200px;">
+                    {% else %}
+                        <div class="bg-white p-4 rounded shadow-sm">
+                            <i class="fas fa-qrcode fa-3x text-muted"></i>
+                            <p class="text-muted mt-2">QR no disponible</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-search fa-3x text-primary mb-3"></i>
+                            <h2 class="fw-bold">Consultar Historial</h2>
+                            <p class="text-muted">Ingresá tu código de servicio para ver el estado y chat</p>
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label for="service_code" class="form-label fw-bold">Código de Servicio</label>
+                                <input type="text" 
+                                       class="form-control form-control-lg text-center" 
+                                       id="service_code" 
+                                       name="service_code" 
+                                       placeholder="Ej: TY001" 
+                                       required 
+                                       maxlength="10"
+                                       style="font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase;">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    El código te fue entregado cuando enviaste tu solicitud
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-search me-2"></i>Consultar Historial
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <p class="text-muted mb-2">¿No tenés código de servicio?</p>
+                            <a href="{% url 'contact:contact' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-2"></i>Solicitar Servicio
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Proteger el banner de confirmación del código de servicio
+    document.addEventListener('DOMContentLoaded', function() {
+        const successBanner = document.querySelector('.bg-success');
+        if (successBanner) {
+            // Observar cambios en el DOM para detectar intentos de ocultar
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && 
+                        (mutation.attributeName === 'style' || mutation.attributeName === 'class')) {
+                        // Restaurar visibilidad si se intenta ocultar
+                        successBanner.style.display = 'block';
+                        successBanner.style.opacity = '1';
+                        successBanner.style.visibility = 'visible';
+                        successBanner.classList.remove('fade', 'collapse', 'collapsing');
+                    }
+                });
+            });
+            
+            observer.observe(successBanner, {
+                attributes: true,
+                attributeFilter: ['style', 'class']
+            });
+            
+            // También proteger contra Bootstrap Alert
+            if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                // Sobrescribir el método close de Bootstrap Alert para este elemento
+                const originalClose = bootstrap.Alert.prototype.close;
+                bootstrap.Alert.prototype.close = function() {
+                    if (this._element.classList.contains('bg-success')) {
+                        return; // No cerrar el banner de confirmación
+                    }
+                    return originalClose.call(this);
+                };
+            }
+        }
+    });
+</script>
+{% endblock %} 

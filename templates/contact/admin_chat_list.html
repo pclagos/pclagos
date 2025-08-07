@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Admin Chat - PCLagos{% endblock %}
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <h2 class="fw-bold mb-4">Chats de Servicios</h2>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in contacts %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'contact:admin_chat_detail' service_code=c.service_code %}" 
+                               class="text-decoration-none">
+                                <code class="text-primary">{{ c.service_code }}</code>
+                            </a>
+                        </td>
+                        <td>{{ c.name }}</td>
+                        <td>{{ c.service_needed }}</td>
+                        <td style="max-width: 250px; white-space: pre-line;">{{ c.description|truncatechars:120 }}</td>
+                        <td>
+                            <form method="post" action="{% url 'contact:admin_chat_list' %}" class="d-flex align-items-center gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="service_code" value="{{ c.service_code }}">
+                                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    {% for key, val in c.STATUS_CHOICES %}
+                                        <option value="{{ key }}" {% if c.status == key %}selected{% endif %}>{{ val }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </td>
+                        <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'contact:admin_chat_detail' c.service_code %}" class="btn btn-sm btn-primary mb-1">
+                                <i class="fas fa-comments"></i> Ver Chat
+                            </a>
+                            <a href="/admin/contact/contact/{{ c.id }}/change/" class="btn btn-sm btn-outline-secondary mb-1" target="_blank">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center">No hay servicios aún.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Servicios - PCLagos{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold">Mis Servicios</h1>
+            <p class="lead text-muted">Soluciones reales para tu PC en General Lagos</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tools fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Arreglo de PCs</h5>
+                        <p class="card-text">Reparación de computadoras de escritorio: problemas de hardware, software, etc.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-cogs fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Armado de PCs</h5>
+                        <p class="card-text">Armado de computadoras con los componentes que elijas.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-lightbulb fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Planificación de PC a presupuesto</h5>
+                        <p class="card-text">Te ayudo a elegir los componentes ideales para tu PC según tu presupuesto y uso.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-desktop fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Instalación de Windows</h5>
+                        <p class="card-text">Instalación, activación y configuración de Windows, drivers y programas básicos.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-word fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Instalación de Office</h5>
+                        <p class="card-text">Instalación de Microsoft Office y otros programas de uso general.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shield-virus fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Instalación de antivirus</h5>
+                        <p class="card-text">Instalación y configuración de antivirus para proteger tu PC.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <h3 class="mb-4">¿No encontrás el servicio que necesitás?</h3>
+            <p class="lead text-muted">Contactame y te voy a dar una solución personalizada</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'contact:contact' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-envelope me-2"></i>Contactame
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

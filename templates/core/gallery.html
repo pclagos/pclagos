@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Historial - PCLagos{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold">Historial de Trabajos</h1>
+            <p class="lead text-muted">Algunos de mis trabajos más recientes y exitosos</p>
+        </div>
+        
+        {% if works %}
+        <div class="row g-4">
+            {% for work in works %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100">
+                    {% if work.image %}
+                    <img src="{{ work.image.url }}" class="card-img-top" alt="{{ work.title }}" style="height: 250px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="fas fa-tools fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ work.title }}</h5>
+                        <p class="card-text">{{ work.description }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">{{ work.service_type }}</span>
+                            <small class="text-muted">{{ work.completed_date }}</small>
+                        </div>
+                        {% if work.is_featured %}
+                        <div class="mt-2">
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-star me-1"></i>Destacado
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="fas fa-laptop fa-3x text-muted"></i>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Reparación de Laptop HP</h5>
+                        <p class="card-text">Cambio de pantalla y teclado en laptop HP Pavilion. Cliente muy satisfecho con el resultado.</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">Reparación de Laptop</span>
+                            <small class="text-muted">15/01/2024</small>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-star me-1"></i>Destacado
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="fas fa-desktop fa-3x text-muted"></i>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Mantenimiento PC Gaming</h5>
+                        <p class="card-text">Limpieza completa, cambio de pasta térmica y optimización para gaming. Mejor rendimiento garantizado.</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">Mantenimiento</span>
+                            <small class="text-muted">12/01/2024</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="fas fa-database fa-3x text-muted"></i>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Recuperación de Datos</h5>
+                        <p class="card-text">Recuperación exitosa de archivos importantes de un disco duro dañado. 95% de datos recuperados.</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">Recuperación</span>
+                            <small class="text-muted">10/01/2024</small>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-star me-1"></i>Destacado
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="fas fa-download fa-3x text-muted"></i>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Instalación Windows 11</h5>
+                        <p class="card-text">Instalación limpia de Windows 11 con todos los drivers actualizados y programas esenciales.</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">Software</span>
+                            <small class="text-muted">08/01/2024</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="fas fa-wifi fa-3x text-muted"></i>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Configuración de Red</h5>
+                        <p class="card-text">Configuración de red doméstica con impresora compartida y acceso remoto configurado.</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">Red</span>
+                            <small class="text-muted">05/01/2024</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="fas fa-shield-alt fa-3x text-muted"></i>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Limpieza de Virus</h5>
+                        <p class="card-text">Eliminación completa de malware y configuración de antivirus para protección futura.</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">Seguridad</span>
+                            <small class="text-muted">03/01/2024</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="text-center mt-5">
+            <h3 class="mb-4">Te gustó mi trabajo?</h3>
+            <p class="lead text-muted">Contactame para que también te pueda ayudar</p>
+            <a href="{% url 'contact:contact' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-envelope me-2"></i>Contactame
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %} 

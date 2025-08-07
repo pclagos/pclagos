@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat - {{ contact.service_code }} - PCLagos{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <!-- Header del servicio -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="mb-0">
+                                    <i class="fas fa-ticket-alt me-2"></i>
+                                    Servicio {{ contact.service_code }}
+                                </h4>
+                                <small>{{ contact.name }} - {{ contact.service_needed }}</small>
+                            </div>
+                            <div class="text-end">
+                                {% if contact.status == 'completed' %}
+                                    <span class="badge bg-success text-white">
+                                        <i class="fas fa-check-circle me-1"></i>{{ contact.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">{{ contact.get_status_display }}</span>
+                                {% endif %}
+                                <br>
+                                <small>{{ contact.created_at|date:"d/m/Y H:i" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Cliente:</strong> {{ contact.name }}<br>
+                                <strong>Email:</strong> {{ contact.email }}<br>
+                                <strong>Teléfono:</strong> {{ contact.phone }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Servicio:</strong> {{ contact.service_needed }}<br>
+                                <strong>Estado:</strong> {{ contact.get_status_display }}<br>
+                                <strong>Código:</strong> <code class="bg-light px-2 py-1">{{ contact.service_code }}</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notas de reparación -->
+                {% if contact.service_notes.all %}
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sticky-note me-2"></i>Notas de Reparación
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            {% for note in contact.service_notes.all %}
+                            <div class="timeline-item mb-3">
+                                <div class="d-flex">
+                                    <div class="timeline-marker bg-warning rounded-circle me-3" style="width: 12px; height: 12px; margin-top: 6px;"></div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <strong class="text-warning">{{ note.display_date|date:"d/m/Y H:i" }}</strong>
+                                        </div>
+                                        <p class="mb-0 mt-1">{{ note.note }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Chat -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-comments me-2"></i>
+                            Chat del Servicio
+                        </h5>
+                    </div>
+                    <div class="card-body" id="chat-messages" style="height: 400px; overflow-y: auto;">
+                        <!-- Mensajes se llenan por JS -->
+                    </div>
+                    <!-- Formulario para enviar mensaje -->
+                    <div class="card-footer">
+                        {% if contact.status == 'completed' %}
+                            <div class="alert alert-success text-center mb-0">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>¡Servicio Completado!</strong> El chat ha sido bloqueado ya que tu servicio ha sido finalizado exitosamente.
+                            </div>
+                        {% elif contact.status == 'cancelled' %}
+                            <div class="alert alert-danger text-center mb-0">
+                                <i class="fas fa-times-circle me-2"></i>
+                                <strong>¡Servicio Cancelado!</strong> El chat ha sido bloqueado ya que tu servicio ha sido cancelado.
+                            </div>
+                        {% else %}
+                            <form id="chat-form" method="post" autocomplete="off">
+                                {% csrf_token %}
+                                <div class="input-group">
+                                    <textarea class="form-control" 
+                                              name="message" 
+                                              id="chat-message-input"
+                                              placeholder="Escribí tu mensaje..." 
+                                              rows="2" 
+                                              required></textarea>
+                                    <button class="btn btn-primary" type="submit" id="chat-send-btn">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Código QR y botones de acción -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">
+                                    <i class="fas fa-qrcode me-2"></i>Código QR
+                                </h6>
+                                <p class="text-muted small mb-3">Escaneá este código para acceder al chat desde tu celular</p>
+                                {% if contact.qr_code %}
+                                    <img src="{{ contact.qr_code.url }}" alt="QR Code" class="img-fluid" style="max-width: 200px;">
+                                {% else %}
+                                    <div class="bg-light p-4 rounded">
+                                        <i class="fas fa-qrcode fa-3x text-muted"></i>
+                                        <p class="text-muted mt-2">QR no disponible</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">
+                                    <i class="fas fa-link me-2"></i>Enlaces Rápidos
+                                </h6>
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'contact:service_history' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Volver al Historial
+                                    </a>
+                                    <a href="{% url 'core:home' %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-home me-2"></i>Ir al Inicio
+                                    </a>
+                                    <a href="https://wa.me/5493402556984" class="btn btn-success" target="_blank">
+                                        <i class="fab fa-whatsapp me-2"></i>Contactar por WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.timeline-item {
+    position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 24px;
+    bottom: -12px;
+    width: 2px;
+    background-color: #dee2e6;
+}
+</style>
+
+<script>
+const serviceCode = "{{ contact.service_code }}";
+const isAdmin = {{ is_admin|default:False|yesno:'true,false' }};
+const isCompleted = {% if contact.status == 'completed' %}true{% else %}false{% endif %};
+const isCancelled = {% if contact.status == 'cancelled' %}true{% else %}false{% endif %};
+const chatMessages = document.getElementById('chat-messages');
+const chatForm = document.getElementById('chat-form');
+const chatInput = document.getElementById('chat-message-input');
+const chatSendBtn = document.getElementById('chat-send-btn');
+
+function renderMessages(messages) {
+    chatMessages.innerHTML = '';
+    if (messages.length === 0) {
+        chatMessages.innerHTML = `<div class='text-center text-muted py-5'><i class='fas fa-comments fa-3x mb-3'></i><p>No hay mensajes aún. ¡Sé el primero en escribir!</p></div>`;
+        return;
+    }
+    messages.forEach(msg => {
+        const align = msg.is_from_admin ? 'justify-content-end' : '';
+        const cardClass = msg.is_from_admin ? 'bg-primary text-white' : 'bg-light';
+        const textAlign = msg.is_from_admin ? 'text-end' : '';
+        const icon = msg.is_from_admin ? '<i class="fas fa-user-cog ms-1"></i>' : '<i class="fas fa-user ms-1"></i>';
+        chatMessages.innerHTML += `
+            <div class="mb-3">
+                <div class="d-flex ${align}">
+                    <div class="${textAlign}" style="max-width: 70%;">
+                        <div class="card ${cardClass}">
+                            <div class="card-body py-2 px-3">
+                                <p class="mb-1">${msg.message}</p>
+                                <small class="${msg.is_from_admin ? 'text-white-50' : 'text-muted'}">
+                                    ${msg.created_at} ${icon}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function fetchMessages() {
+    fetch(`/contact/chat/${serviceCode}/messages/`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        renderMessages(data.messages);
+    });
+}
+
+if (chatForm && !isCompleted && !isCancelled) {
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const message = chatInput.value.trim();
+        if (!message) return;
+        chatSendBtn.disabled = true;
+        chatSendBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
+        const formData = new FormData();
+        formData.append('message', message);
+        formData.append('is_admin', isAdmin);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        fetch(`/contact/chat/${serviceCode}/send/`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            chatSendBtn.disabled = false;
+            chatSendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            if (data.success) {
+                chatInput.value = '';
+                chatInput.focus();
+                fetchMessages();
+            }
+        });
+    });
+}
+
+// Actualizar mensajes cada 3 segundos
+document.addEventListener('DOMContentLoaded', function() {
+    fetchMessages();
+    setInterval(fetchMessages, 3000);
+});
+</script>
+{% endblock %} 
