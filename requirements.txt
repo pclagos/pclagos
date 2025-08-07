@@ -1,5 +1,5 @@
 Django==5.2.4
-crispy-forms==2.1
+django-crispy-forms==2.0
 crispy-bootstrap5==0.7
 qrcode==7.4.2
 Pillow==10.2.0
