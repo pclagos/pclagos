@@ -42,18 +42,35 @@ def contact(request):
         form = ContactForm(request.POST)
         if form.is_valid():
             try:
+                # Generar código de servicio primero
+                service_code = generate_service_code()
+                
+                # Crear el contacto sin QR code inicialmente
                 contact = form.save(commit=False)
-                contact.service_code = generate_service_code()
+                contact.service_code = service_code
                 contact.save()
+                
+                # Crear el mensaje inicial
                 ServiceMessage.objects.create(
                     contact=contact,
                     message=contact.description,
                     is_from_admin=False
                 )
+                
+                # Generar QR code después de guardar
+                try:
+                    contact.generate_qr_code()
+                    contact.save()
+                except Exception as qr_error:
+                    print(f"Error generando QR code: {qr_error}")
+                    # Continuar sin QR si falla
+                
                 request.session['service_code_message'] = contact.service_code
                 return redirect('contact:service_history')
             except Exception as e:
                 print(f"Error guardando contacto: {e}")
+                import traceback
+                traceback.print_exc()
                 messages.error(request, 'Hubo un error al procesar tu solicitud. Por favor intenta nuevamente.')
         else:
             messages.error(request, 'Por favor corrige los errores en el formulario.')

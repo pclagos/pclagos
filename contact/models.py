@@ -92,14 +92,7 @@ class Contact(models.Model):
             pass
     
     def save(self, *args, **kwargs):
-        # Generar código QR si no existe
-        if not self.qr_code:
-            super().save(*args, **kwargs)
-            try:
-                self.generate_qr_code()
-            except Exception as e:
-                print(f"Error en save method: {e}")
-                # Continuar sin QR si falla
+        # Solo guardar, no generar QR automáticamente
         super().save(*args, **kwargs)
 
 class ServiceMessage(models.Model):
