@@ -2,6 +2,7 @@ from django.db import models
 import random
 import string
 import qrcode
+import os
 from io import BytesIO
 from django.core.files import File
 from django.urls import reverse
@@ -67,29 +68,38 @@ class Contact(models.Model):
     
     def generate_qr_code(self):
         """Genera un código QR con la URL del chat"""
-        if not self.qr_code:
-            qr = qrcode.QRCode(
-                version=1,
-                error_correction=qrcode.constants.ERROR_CORRECT_L,
-                box_size=10,
-                border=4,
-            )
-            qr.add_data(self.get_chat_url())
-            qr.make(fit=True)
-            
-            img = qr.make_image(fill_color="black", back_color="white")
-            buffer = BytesIO()
-            img.save(buffer, format='PNG')
-            
-            filename = f'qr_{self.service_code}.png'
-            self.qr_code.save(filename, File(buffer), save=False)
-            buffer.close()
+        try:
+            if not self.qr_code:
+                qr = qrcode.QRCode(
+                    version=1,
+                    error_correction=qrcode.constants.ERROR_CORRECT_L,
+                    box_size=10,
+                    border=4,
+                )
+                qr.add_data(self.get_chat_url())
+                qr.make(fit=True)
+                
+                img = qr.make_image(fill_color="black", back_color="white")
+                buffer = BytesIO()
+                img.save(buffer, format='PNG')
+                
+                filename = f'qr_{self.service_code}.png'
+                self.qr_code.save(filename, File(buffer), save=False)
+                buffer.close()
+        except Exception as e:
+            # Si falla la generación del QR, continuar sin él
+            print(f"Error generando QR code: {e}")
+            pass
     
     def save(self, *args, **kwargs):
         # Generar código QR si no existe
         if not self.qr_code:
             super().save(*args, **kwargs)
-            self.generate_qr_code()
+            try:
+                self.generate_qr_code()
+            except Exception as e:
+                print(f"Error en save method: {e}")
+                # Continuar sin QR si falla
         super().save(*args, **kwargs)
 
 class ServiceMessage(models.Model):

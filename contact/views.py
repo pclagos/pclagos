@@ -8,6 +8,7 @@ from .forms import ContactForm
 from .models import Contact, ServiceMessage, ServiceNote
 import random
 import string
+import os
 from datetime import datetime
 
 def generate_service_code():
@@ -40,17 +41,20 @@ def contact(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)
         if form.is_valid():
-            contact = form.save(commit=False)
-            contact.service_code = generate_service_code()
-            contact.save()
-            ServiceMessage.objects.create(
-                contact=contact,
-                message=contact.description,
-                is_from_admin=False
-            )
-            # Guardar el código en la sesión para mostrarlo en historial
-            request.session['service_code_message'] = contact.service_code
-            return redirect('contact:service_history')
+            try:
+                contact = form.save(commit=False)
+                contact.service_code = generate_service_code()
+                contact.save()
+                ServiceMessage.objects.create(
+                    contact=contact,
+                    message=contact.description,
+                    is_from_admin=False
+                )
+                request.session['service_code_message'] = contact.service_code
+                return redirect('contact:service_history')
+            except Exception as e:
+                print(f"Error guardando contacto: {e}")
+                messages.error(request, 'Hubo un error al procesar tu solicitud. Por favor intenta nuevamente.')
         else:
             messages.error(request, 'Por favor corrige los errores en el formulario.')
     else:
