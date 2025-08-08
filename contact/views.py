@@ -38,6 +38,7 @@ def generate_service_code():
         return f"{letters}{new_number:03d}"
 
 def contact(request):
+    return redirect("https://wa.me/5493402556984")
     if request.method == 'POST':
         form = ContactForm(request.POST)
         if form.is_valid():
